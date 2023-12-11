@@ -72,5 +72,5 @@ stages:
             azureSubscription: 'fmgscecomm'
             appType: 'webApp'
             WebAppName: 'primarkapp09'
-            packageForLinux: '$(System.DefaultWorkingDirectory)/**/Web.zip'
+            packageForLinux: '$(System.ArtifactStagingDirectory)/**/Web.zip'
 
