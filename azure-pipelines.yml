@@ -69,7 +69,7 @@ stages:
         - task: AzureRmWebAppDeployment@4
           inputs:
             ConnectionType: 'AzureRM'
-            azureSubscription: 'fmgscecomm'
+            azureSubscription: 'primarkevening'
             appType: 'webApp'
             WebAppName: 'primarkapp09'
             packageForLinux: '$(Build.ArtifactStagingDirectory)/**/Web.zip'
