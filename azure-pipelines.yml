@@ -54,7 +54,7 @@ stages:
          ArtifactName: Website 
 
   - stage: Development 
-    displayName: Deploy to Azure webapp
+    displayName: Dev
     jobs:
     - job: Deploy
       pool:
@@ -75,7 +75,7 @@ stages:
             packageForLinux: '$(Build.ArtifactStagingDirectory)/**/Web.zip'
 
   - stage: Prod 
-    displayName: Deploy to Azure webapp
+    displayName: Prod
     jobs:
     - job: Deploy
       pool:
