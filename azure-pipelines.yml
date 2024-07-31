@@ -1,22 +1,22 @@
 name: don_net_webapp
-trigger: 
- branches:
-   include:
-     - main
-     - master
-   exclude:
-     - main/old
-     - master/old
- paths:
-   include:
-     - master/old/*
-   exclude:
-     - devops/new
+# trigger: 
+#  branches:
+#    include:
+#      - main
+#      - master
+#    exclude:
+#      - main/old
+#      - master/old
+#  paths:
+#    include:
+#      - master/old/*
+#    exclude:
+#      - devops/new
 resources: 
   repositories:
     - repository: self
 schedules:
-  - cron: '* * * * *'
+  # - cron: '* * * * *'
 #    *   *   *   *  sh /path/to/script/script.sh
 # |   |   |   |   |              |
 # |   |   |   |   |      Command or Script to Execute        
@@ -32,7 +32,7 @@ schedules:
 # | Hour(0-23)  
 # |
 # Min(0-59)
-    always: true
+   always: true
 variables: 
   BuildConfiguration: 'Release'
 parameters:
