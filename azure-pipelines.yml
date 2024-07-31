@@ -35,3 +35,77 @@ schedules:
     always: true
 variables: 
   BuildConfiguration: 'Release'
+parameters:
+  - name: image
+    displayName: pool image
+    type: string
+    default: ubuntu-latest
+    values:
+      - ubuntu-latest
+      - mac-latest
+      - windows-latest
+stages:
+  - stage: Build
+    displayName: Build Dotnet Application
+    jobs:
+      - job: build
+        pool: 
+          vmImage: ${{parameters.image}}
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              version: 3.x
+              packageType: sdk
+              installationPath: $(Agent.ToolsDirectory)/dotnettools
+          - task: DotNetCoreCLI@2
+            displayName: Dotnet Restore
+            inputs:
+              command: restore
+              feedsToUse: select
+              projects: '**/*.csproj'
+          - task: DotNetCoreCLI@2
+            displayName: Dotnet Build
+            inputs:
+              command: build
+              projects: '**/*.csproj'
+              arguments: '--configuration $(BuildConfigurations)'
+          - task: DotNetCoreCLI@2
+            inputs: 
+             command: test
+             projects: '**/Teset/UnitTest/*.sln'
+             arguments: '--configuration $(BuildConfigurations)'
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: publish
+              publishWebProjects: true
+              arguments: '--configuration $(BuildConfigurations) -$(Build.ArtifactStagingDirectory)'
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: $(Build.ArtifactStagingDirectory)
+              ArtifactName: webapp
+  - stage: Deploy_to_webapp
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: deploy
+        pool: 
+          vmImage: ubuntu-latest
+        environment: dev
+        strategy: 
+         runOnce:
+           deploy:
+             steps: 
+               - task: DownloadBuildArtifacts@0
+                 inputs:
+                   buildType: current
+                   downloadPath: Build.ArtifactStagingDirectory
+                   downloadType: single
+                   artifactName: webapp
+               - task: AzureRmWebAppDeployment@4
+                 inputs:
+                   ConnectionType: AzureRM
+                   appType: webApp
+                   azureSubscription: 
+                   webappname: err
+                   packageForLinux: $(build.artifactStagingDirectory)/**/*.zip
+
