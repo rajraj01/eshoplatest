@@ -1,26 +1,37 @@
-name: eshop_web_app
+name: don_net_webapp
 trigger: 
  branches:
    include:
      - main
      - master
    exclude:
-     - main/old/*
-resources:
- repositories:
-   - repository: self
-stages:
-  - stage: builadn release
-    displayName: Dotnet build And Release
-    jobs:
-      - job: build
-        displayName: dotnet build
-        pool: 
-          vmImage: ubuntu-latest
-        steps:
-          - task: UseDotNet@2
-            inputs:
-              packageType: sdk
-              version: 3.x
-              installationPath: $(Agent.ToolsDirectory)/dotnettools
-              
+     - main/old
+     - master/old
+ paths:
+   include:
+     - master/old/*
+   exclude:
+     - devops/new
+resources: 
+  repositories:
+    - repository: self
+schedules:
+  - cron: '* * * * *'
+#    *   *   *   *  sh /path/to/script/script.sh
+# |   |   |   |   |              |
+# |   |   |   |   |      Command or Script to Execute        
+# |   |   |   |   |
+# |   |   |   |   |
+# |   |   |   |   |
+# |   |   |   | Day of the Week(0-6)
+# |   |   |   |
+# |   |   | Month of the Year(1-12)
+# |   |   |
+# |   | Day of the Month(1-31)  
+# |   |
+# | Hour(0-23)  
+# |
+# Min(0-59)
+    always: true
+variables: 
+  BuildConfiguration: 'Release'
