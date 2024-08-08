@@ -1,0 +1,104 @@
+name: dotnet_webapplication
+trigger: 
+ branches:
+   include:
+     - main
+     - master
+   exclude:
+     - main/*
+     - master/*
+ paths:
+   include:
+     - main/dev
+   exclude:
+     - main/dev/*
+resources:
+ repositories:
+   - repository: myrepo
+     type: github
+     name: username/repositoryName
+     ref: refs/heads/main
+     endpoint: MyGitHubConnection
+     trigger: none
+schedules:
+  - cron: '* * * * *'
+    branches:
+      include:
+        - master
+      exclude:
+        - master/*
+parameters:
+  - name: image
+    displayName: pool image
+    type: string
+    default: ubuntu-latest
+    values:
+      - ubuntu-latest
+      - mac-latest
+      - windows-latest
+variables:
+ - name: BuildConfiguration
+   value: Release
+stages:
+  - stage: build
+    displayName: dotnet build and release
+    jobs:
+      - job: build
+        pool: 
+          vmImage: ${{parameters.image}}
+        steps:
+          - task: UseDotNet@2
+            inputs:
+              version: 3.x
+              packageType: sdk
+              installationPath: $(Agent.ToolsDirectory)/Buildtools
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: restore
+              feedsToUse: select
+              projects: '**/*.csproj'
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: build
+              projects: '**/*.csproj'
+              arguments: --configurations $(BuildConfigurations)
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: test
+              projects: 'Tests/UnitTest/*.sln'
+              arguments: --configurations $(BuildConfigurations)
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: publish
+              publishWebProjects: true
+              arguments: --configuration $(BuildConfiguration) -o $(Buil.ArtifactStagingDirectory)
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: $(Buil.ArtifactStagingDirectory)
+              ArtifactName: webapp
+  - stage: deploy_to_dev
+    displayName: Deploy To Web App
+    condition: succeeded()
+    dependsOn: build
+    jobs:
+      - deployment: deploy
+        pool: 
+          vmImage: ubuntu-latest
+        environment: dev
+        strategy: 
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadBuildArtifacts@0
+                  inputs:
+                    downloadType: single
+                    buildType: current
+                    downloadPath: $(build.ArtifactStagingDirectory)
+                    artifactName: webapp
+                - task: AzureRmWebAppDeployment@4
+                  inputs: 
+                   ConnectionType: AzureRM
+                   azureSubscription: ''
+                   appType: webApp 
+                   WebAppName: aapu
+                   packageForLinux: $(build.artifactStagingDirectory)/**/*.zip
