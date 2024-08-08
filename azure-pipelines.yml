@@ -14,12 +14,12 @@ trigger:
      - main/dev/*
 resources:
  repositories:
-   - repository: myrepo
-     type: github
-     name: username/repositoryName
-     ref: refs/heads/main
-     endpoint: MyGitHubConnection
-     trigger: none
+   - repository: self
+    #  type: github
+    #  name: username/repositoryName
+    #  ref: refs/heads/main
+    #  endpoint: MyGitHubConnection
+    #  trigger: none
 schedules:
   - cron: '* * * * *'
     branches:
